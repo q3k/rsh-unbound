@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 	"sort"
 	"strings"
@@ -160,6 +161,17 @@ func main() {
 	flag.StringVar(&flagRedirect, "redirect", "145.237.235.240", "Address to redirect to")
 	flag.Parse()
 	glog.Info("Starting up...")
+
+	// If output doesn't exist yet, create it empty.
+	// This is to prevent a dependency loop when unbound can't start because
+	// the file is missing, which makes rsh not able to retrieve data as
+	// there's no DNS.
+	if _, err := os.Stat(flagOutput); err != nil && os.IsNotExist(err) {
+		glog.Infof("File %q missing, creating empty.", flagOutput)
+		if err := ioutil.WriteFile(flagOutput, []byte(""), 0600); err != nil {
+			glog.Errorf("Failed to create initial file: %v", err)
+		}
+	}
 
 	ctx := context.Background()
 
