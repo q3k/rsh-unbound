@@ -5,4 +5,5 @@ go 1.15
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+	golang.org/x/net v0.0.0-20211208012354-db4efeb81f4b
 )

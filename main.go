@@ -28,6 +28,7 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
+	"golang.org/x/net/idna"
 )
 
 var (
@@ -92,7 +93,11 @@ func populateConfig(ctx context.Context) error {
 	domainSet := make(map[string]bool)
 	domains := make([]string, 0, len(entries))
 	for _, entry := range entries {
-		addr := entry.Address
+		addr, err := idna.ToASCII(entry.Address)
+		if err != nil {
+			glog.Warningf("Could not convert domain name %q: %v", addr, err)
+			continue
+		}
 		if domainSet[addr] {
 			continue
 		}
@@ -156,7 +161,7 @@ func run(ctx context.Context) {
 }
 
 func main() {
-	flag.StringVar(&flagRegister, "register_endpoint", "https://www.hazard.mf.gov.pl/api/Register", "Address of RSH Registry endpoint")
+	flag.StringVar(&flagRegister, "register_endpoint", "https://hazard.mf.gov.pl/api/Register", "Address of RSH Registry endpoint")
 	flag.StringVar(&flagOutput, "output", "/etc/unbound/rsh.conf", "Path to generated Unbound config file")
 	flag.StringVar(&flagRedirect, "redirect", "145.237.235.240", "Address to redirect to")
 	flag.Parse()
